@@ -1,0 +1,19 @@
+name: ipr
+
+services:
+  app:
+    build: .
+    image: ipr:1
+    ports:
+      - "${OUTSIDE_PORT}:${PORT}"
+    environment:
+      PORT: ${PORT}
+      GREETING: ${GREETING}
+      STORAGE: sqlite
+      DATA_FILE: /data/counter.db
+    volumes:
+      - data:/data
+    restart: unless-stopped
+
+volumes:
+  data:
