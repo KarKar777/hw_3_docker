@@ -51,3 +51,40 @@ docker compose up -d
 {"status": "ready", "storage": "sqlite"}
 ```
 Счетчик сохранился после удаления контейнера.
+
+
+# Решение уровня на 8 баллов
+
+Добавил redis. Запуск остался таким же.
+
+## Проверка
+
+Проверка перезапуска контейнера. Счетчик остается таким же.
+```sh
+curl -X POST 127.0.0.1:8080/increment
+        {"greeting": "Wake up, Neo!", "count": 12, "hostname": "19ce102ee888", "storage": "redis"}
+docker compose down
+docker compose up -d
+curl 127.0.0.1:8080/
+        {"greeting": "Wake up, Neo!", "count": 12, "hostname": "5cd9bcb19225", "storage": "redis"}
+
+```
+
+Проверка остановки redis. Сервис работает, но redis не отвечает.
+```sh
+docker compose stop redis
+curl 127.0.0.1:8080/healthz
+    {"status": "alive"}
+curl 127.0.0.1:8080/readyz
+    {"error": "storage_unavailable"}
+curl -X POST 127.0.0.1:8080/increment
+    {"error": "storage_unavailable"}
+```
+Проверка запуска redis. Все продолжает работать.
+```sh
+docker compose start redis
+curl 127.0.0.1:8080
+    {"greeting": "Wake up, Neo!", "count": 12, "hostname": "5cd9bcb19225", "storage": "redis"}
+curl -X POST 127.0.0.1:8080/increment
+    {"greeting": "Wake up, Neo!", "count": 13, "hostname": "5cd9bcb19225", "storage": "redis"}
+```
